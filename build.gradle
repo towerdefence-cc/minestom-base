@@ -1,19 +1,53 @@
 plugins {
-    id 'java'
+    id("java-library")
+    id("maven-publish")
+
+    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("application")
 }
 
-group 'cc.towerdefence.minestom'
-version '1.0-SNAPSHOT'
+group "cc.towerdefence.minestom"
+version "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    mavenLocal() // In maven local: openmatch.frontend, agones-sdk
+    maven { url = "https://jitpack.io" }
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    api("cc.towerdefence.api:agones-sdk:1.0.0")
+    api('io.kubernetes:client-java:16.0.0')
+    api("cc.towerdefence.api:player-tracker-sdk:1.0.0")
+
+    api("com.github.Minestom:Minestom:7eb9d3fdd7")
+    implementation("net.kyori:adventure-text-minimessage:4.11.0")
+//    api("net.minestom.server:Minestom:1.0") // local
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 }
 
 test {
     useJUnitPlatform()
+}
+
+application {
+    mainClass = "cc.towerdefence.minestom.Entrypoint"
+}
+
+shadowJar {
+    mergeServiceFiles()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'cc.towerdefence.minestom'
+            artifactId = 'base'
+            version = '1.0.0'
+
+            from components.java
+        }
+    }
 }
