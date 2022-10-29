@@ -3,6 +3,7 @@ package cc.towerdefence.minestom;
 import cc.towerdefence.api.agonessdk.EmptyStreamObserver;
 import cc.towerdefence.minestom.agones.AgonesManager;
 import cc.towerdefence.minestom.command.CurrentServerCommand;
+import cc.towerdefence.minestom.command.PerformanceCommand;
 import cc.towerdefence.minestom.command.agones.AgonesCommand;
 import cc.towerdefence.minestom.kubernetes.KubernetesManager;
 import cc.towerdefence.minestom.playertracker.PlayerTrackerManager;
@@ -54,6 +55,7 @@ public final class MinestomServer {
 
             MinecraftServer.getCommandManager().register(new CurrentServerCommand());
             MinecraftServer.getCommandManager().register(new AgonesCommand());
+            MinecraftServer.getCommandManager().register(new PerformanceCommand());
         } else {
             LOGGER.warn("""
                     Kubernetes is not enabled, this server will not be able to connect to Agones
