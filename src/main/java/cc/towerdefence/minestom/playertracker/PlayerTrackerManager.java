@@ -1,11 +1,8 @@
 package cc.towerdefence.minestom.playertracker;
 
 import cc.towerdefence.api.agonessdk.EmptyStreamObserver;
-import cc.towerdefence.api.service.GetPlayerServerRequest;
-import cc.towerdefence.api.service.GetPlayerServerResponse;
-import cc.towerdefence.api.service.OnlineServer;
-import cc.towerdefence.api.service.PlayerLoginRequest;
 import cc.towerdefence.api.service.PlayerTrackerGrpc;
+import cc.towerdefence.api.service.PlayerTrackerProto;
 import cc.towerdefence.minestom.MinestomServer;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -25,6 +22,7 @@ public class PlayerTrackerManager {
 
     public PlayerTrackerManager() {
         ManagedChannel channel = ManagedChannelBuilder.forAddress("player-tracker.towerdefence.svc", 9090)
+                .defaultLoadBalancingPolicy("round_robin")
                 .usePlaintext()
                 .build();
 
@@ -35,12 +33,12 @@ public class PlayerTrackerManager {
         MinestomServer.getEventNode().addListener(PlayerLoginEvent.class, this::onPlayerJoin);
     }
 
-    public void retrievePlayerServer(UUID uuid, Consumer<OnlineServer> responseConsumer) {
-        this.stub.getPlayerServer(GetPlayerServerRequest.newBuilder()
+    public void retrievePlayerServer(UUID uuid, Consumer<PlayerTrackerProto.OnlineServer> responseConsumer) {
+        this.stub.getPlayerServer(PlayerTrackerProto.GetPlayerServerRequest.newBuilder()
                 .setPlayerId(uuid.toString())
                 .build(), new StreamObserver<>() {
             @Override
-            public void onNext(GetPlayerServerResponse value) {
+            public void onNext(PlayerTrackerProto.GetPlayerServerResponse value) {
                 responseConsumer.accept(value.getServer());
             }
 
@@ -59,7 +57,7 @@ public class PlayerTrackerManager {
     private void onPlayerJoin(PlayerLoginEvent event) {
         Player player = event.getPlayer();
 
-        this.stub.serverPlayerLogin(PlayerLoginRequest.newBuilder()
+        this.stub.serverPlayerLogin(PlayerTrackerProto.PlayerLoginRequest.newBuilder()
                         .setPlayerId(player.getUuid().toString())
                         .setPlayerName(player.getUsername())
                         .setServerId(MinestomServer.SERVER_ID).build()

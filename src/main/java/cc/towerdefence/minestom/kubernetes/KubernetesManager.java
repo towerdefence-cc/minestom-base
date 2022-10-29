@@ -4,7 +4,6 @@ import cc.towerdefence.minestom.MinestomServer;
 import io.kubernetes.client.ProtoClient;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.Configuration;
-import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.util.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +36,10 @@ public class KubernetesManager {
     }
 
     public ApiClient getApiClient() {
-        return apiClient;
+        return this.apiClient;
     }
 
     public ProtoClient getProtoClient() {
-        return protoClient;
+        return this.protoClient;
     }
 }

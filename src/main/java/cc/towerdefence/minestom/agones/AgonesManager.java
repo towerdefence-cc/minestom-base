@@ -2,12 +2,16 @@ package cc.towerdefence.minestom.agones;
 
 import cc.towerdefence.api.agonessdk.AgonesUtils;
 import cc.towerdefence.api.agonessdk.EmptyStreamObserver;
+import cc.towerdefence.api.agonessdk.IgnoredStreamObserver;
 import cc.towerdefence.minestom.MinestomServer;
 import cc.towerdefence.minestom.kubernetes.KubernetesManager;
 import dev.agones.sdk.AgonesSDKProto;
 import dev.agones.sdk.SDKGrpc;
+import dev.agones.sdk.alpha.AlphaAgonesSDKProto;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import net.minestom.server.event.player.PlayerDisconnectEvent;
+import net.minestom.server.event.player.PlayerLoginEvent;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,8 +43,23 @@ public final class AgonesManager {
      * Should be called when the server is ready to accept connections
      */
     public void ready() {
-        AgonesUtils.startHealthTask(this.sdk, 5, TimeUnit.SECONDS);
-        this.sdk.ready(AgonesSDKProto.Empty.getDefaultInstance(), new EmptyStreamObserver<>());
+        AgonesUtils.startHealthTask(this.sdk, 10, TimeUnit.SECONDS);
+        this.sdk.ready(AgonesSDKProto.Empty.getDefaultInstance(), new IgnoredStreamObserver<>());
+
+        MinestomServer.getEventNode().addListener(PlayerLoginEvent.class, this::onConnect)
+                .addListener(PlayerDisconnectEvent.class, this::onDisconnect);
+    }
+
+    private void onConnect(PlayerLoginEvent event) {
+        this.alphaSdk.playerConnect(
+                AlphaAgonesSDKProto.PlayerID.newBuilder().setPlayerID(event.getPlayer().getUuid().toString()).build(), new EmptyStreamObserver<>()
+        );
+    }
+
+    private void onDisconnect(PlayerDisconnectEvent event) {
+        this.alphaSdk.playerDisconnect(
+                AlphaAgonesSDKProto.PlayerID.newBuilder().setPlayerID(event.getPlayer().getUuid().toString()).build(), new EmptyStreamObserver<>()
+        );
     }
 
     public @NotNull SDKGrpc.SDKStub getSdk() {
